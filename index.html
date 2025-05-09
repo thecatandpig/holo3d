@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Tải Lên và Tải Xuống File</title>
+</head>
+<body>
+    <h1>Trang Web Tải Lên và Tải Xuống File</h1>
+
+    <!-- Form tải lên tệp -->
+    <h2>Tải Lên File</h2>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" id="file-upload" name="file-upload" />
+        <button type="submit">Tải Lên</button>
+    </form>
+
+    <!-- Danh sách các file đã tải lên -->
+    <h2>Tải Xuống File</h2>
+    <ul id="file-list"></ul>
+
+    <script>
+        // Xử lý sự kiện tải lên
+        const uploadForm = document.getElementById('upload-form');
+        uploadForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const fileInput = document.getElementById('file-upload');
+            const file = fileInput.files[0];
+            if (file) {
+                // Thực hiện tải file lên
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('https://api.github.com/repos/YOUR_USERNAME/YOUR_REPOSITORY/contents/uploads/' + file.name, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'Bearer YOUR_GITHUB_TOKEN',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: 'Upload file ' + file.name,
+                        content: file,
+                    }),
+                }).then(response => {
+                    if (response.ok) {
+                        alert('Tải lên thành công');
+                    } else {
+                        alert('Lỗi khi tải lên');
+                    }
+                });
+            }
+        });
+
+        // Xử lý tải xuống các file đã tải lên
+        function loadFiles() {
+            fetch('https://api.github.com/repos/YOUR_USERNAME/YOUR_REPOSITORY/contents/uploads')
+                .then(response => response.json())
+                .then(data => {
+                    const fileList = document.getElementById('file-list');
+                    fileList.innerHTML = '';
+                    data.forEach(file => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `<a href="${file.download_url}" target="_blank">${file.name}</a>`;
+                        fileList.appendChild(listItem);
+                    });
+                });
+        }
+
+        // Tải danh sách file khi trang được tải
+        loadFiles();
+    </script>
+</body>
+</html>
